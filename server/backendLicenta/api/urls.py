@@ -11,5 +11,7 @@ urlpatterns = [
     path('deleteClient/', delete_client, name='delete_client'),
     path('removeClient/', remove_client, name='remove_client'),
     path('shutdownClient/', shutdown_client, name='shutdown_server'),
-    path('uploadFile/', upload_file, name="upload_file")
+    path('uploadFile/', upload_file, name="upload_file"),
+    path('authenticate/', login, name="authenticate"),
+    path('logout/', logout, name="logout")
 ]

@@ -122,11 +122,17 @@
     color: black;
     cursor:pointer;
 }
-.clientName{
+.clientNameAd{
     font-size: 1.5rem;
     color: white;
     text-decoration: underline;
     cursor:pointer;
+}
+
+.clientNameOp{
+    font-size: 1.5rem;
+    color: white;
+    text-decoration: none;
 }
 
 .details{

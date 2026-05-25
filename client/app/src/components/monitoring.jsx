@@ -2,7 +2,7 @@ import React from 'react'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
-export default function Monitoring() {
+export default function Monitoring({ navigate, authState}) {
 
     const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState("Loading...");
@@ -52,7 +52,7 @@ export default function Monitoring() {
         localStorage.setItem('currentUser', user)
         localStorage.setItem('currentPage', 'deviceDetails')
         console.log(localStorage.getItem('currentUser') + " " + localStorage.getItem('currentIP'))
-        window.location.reload()
+        navigate('deviceDetails')
     }
 
     const deleteClient = async(ip) => {
@@ -85,7 +85,10 @@ export default function Monitoring() {
             <div className="mainCanvas">
                 {status.map((client) => (
                     <div key={client.ip} className="monitorCard" >
-                        <a className="clientName" onClick={() => openDetails(client.ip, client.user)}> {client.name}</a>
+                        {authState == "admin" &&
+                            <a className="clientNameAd" onClick={() => openDetails(client.ip, client.user)}> {client.name}</a> ||
+                            <p className="clientNameOp"> {client.name} </p>
+                        }
                         <div className="progressBarExt" style={{borderColor: "white"}}>
                             <div className="progressBarInt" style={{ width: `${2*client.status[0]}px`, backgroundColor: "white"}}>
                             </div>

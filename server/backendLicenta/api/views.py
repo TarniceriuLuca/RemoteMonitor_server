@@ -2,6 +2,7 @@ import json, time, os
 import subprocess
 from multiprocessing.process import active_children
 
+
 from django.core.handlers.exception import response_for_exception
 from django.shortcuts import render
 from django.utils.choices import BaseChoiceIterator
@@ -10,7 +11,8 @@ from rest_framework.response import Response
 from rest_framework import status
 import socket, sys
 from .models import Client
-
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 
 
 def perform_shutdown(client):
@@ -23,6 +25,27 @@ def perform_shutdown(client):
 
         received = str(sock.recv(1024), "utf-8")
         return received
+
+@api_view(['POST'])
+def login(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    print(user)
+    print("checking auth info")
+    if user is not None:
+        django_login(request, user)
+        if request.user.is_superuser:
+            return Response("admin")
+        else:
+            return Response("operator")
+    else:
+        return Response("auth_error")
+
+@api_view(['GET'])
+def logout(request):
+    django_logout(request)
+    return Response("logout_OK")
 
 @api_view(['GET'])
 def get_status(request):
@@ -81,12 +104,10 @@ def add_device(request):
     )
     command1 = "ssh " + user + "@" + ip + " bash < ./backendLicenta/initialize.sh"
 
-    subprocess.Popen(command1, shell=True, stdout=sp.PIPE)
-    streamdata = child.communicate()[0]
-    if child.returncode < 0:
-        response = "add_error"
-    else:
-        response = "success"
+    subprocess.Popen(command1, shell=True)
+    command2 = "./backendLicenta/create_sshKey.sh " + user + " " + ip
+    subprocess.Popen(command2, shell=True)
+    response = "OK"
     return Response(response)
 
 @api_view(['POST'])
@@ -153,7 +174,6 @@ def remove_client(request):
         response = "remove_error"
     return Response(response)
 
-
 @api_view(['POST'])
 def shutdown_client(request):
     clientIP = request.POST['ip']
@@ -186,7 +206,6 @@ def run_command(request):
     responseData.append({"result":str(result, "utf-8")})
 
     return Response(responseData)
-
 
 @api_view(['POST'])
 def upload_file(request):
