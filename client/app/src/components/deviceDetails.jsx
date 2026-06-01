@@ -1,16 +1,17 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import './style/deviceDetails.css'
 
-const DeviceDetails = () => {
+const DeviceDetails = ({setPageTitle}) => {
 
     const [data, setData] = useState([]);
     const [status, setStatus] = useState("");
     const [loading, setLoading] = useState("Loading...");
     const [command, setCommand] = useState();
-    const [output, setOutput] = useState();
+    const [output, setOutput] = useState("waiting for command...");
     const [selectedFile, setSelectedFile] = useState(null);
-    const [runButtonText, setRunButtonText] = useState("run!");
+    const [runButtonText, setRunButtonText] = useState("Run");
     const [uploadButtonText, setUploadButtonText] = useState("upload")
     const [selectedTime, setSelectedTime] = useState("transfer");
 
@@ -36,6 +37,7 @@ const DeviceDetails = () => {
             {headers:{'Content-Type':'multipart/form-data',}})
 
         setData(response.data[0])
+        setPageTitle(response.data[0].name)
         try{
         setStatus(response.data[0].status)
         } catch(err){
@@ -53,7 +55,7 @@ const DeviceDetails = () => {
 
         console.log(response.data[0]);
         setOutput(response.data[0].result)
-        setRunButtonText("run!");
+        setRunButtonText("Run");
     }
 
 
@@ -87,73 +89,96 @@ const DeviceDetails = () => {
     if(loading === "Loading..."){
         return(
             <>
-            <div className="leftContainer">
-                <h1>DeviceDetails</h1>
-                <h2>{loading}</h2>
-            </div>
+            <h2>{loading}</h2>
             </>
         )
     }else{
         return (
+        <>
         <div className="mainCanvas">
-            <div className="leftContainer">
-                <h1>DeviceDetails</h1>
-                <h2>{loading}</h2>
-                <div className="detailsCanvas">
-                    <div className="details">Name: {data.name}</div>
-                    <div className="details">IP: {data.ip}</div>
-                    <div className="details">User: {data.user}</div>
-                    <div className="details">MEM%: {status[0]}%</div>
-                    <div className="details">CPU%: {status[1]}%</div>
-                    <div className="details">Last reboot: {status[2]}</div>
-                    <div className="details">Platform: {status[3]}</div>
-                    <div className="details">Cpu Brand: {status[4]}</div>
-                    <div className="details">Total Memory: {status[5]} Gb</div>
-                    <div className="details">Total Disk Size: {status[6]} Gb</div>
-                    <div className="details">Available Disk Size: {status[7]} Gb</div>
+            <div className="actionCard">
+                <div className="cardContent">
+
+                    <div className="containerTitle"> SYSTEM INFO </div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> Hostname</div> <div className="statsValue-deviceDetails"> {data.name}</div></div>                             <div className="separator"></div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> IP Address</div> <div className="statsValue-deviceDetails"> {data.ip}</div></div>                             <div className="separator"></div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> User</div> <div className="statsValue-deviceDetails"> {data.user}</div></div>                                 <div className="separator"></div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> Platform</div> <div className="statsValue-deviceDetails"> {status[3]}</div></div>                             <div className="separator"></div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> Cpu</div> <div className="statsValue-deviceDetails"> {status[4]}</div></div>                                  <div className="separator"></div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> Total memory</div> <div className="statsValue-deviceDetails"> {status[5]} GB</div></div>                      <div className="separator"></div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> Disk(free/total)</div> <div className="statsValue-deviceDetails"> {status[7]} / {status[6]} GB</div></div>    <div className="separator"></div>
+                    <div className="stats-deviceDetails"> <div className="statsLabel-deviceDetails"> Last reboot</div> <div className="statsValue-deviceDetails"> {status[2]}</div></div>                          <div className="separator"></div>
+
+                    <div className="separator" style={{ width: `20%`, marginTop:`3vw`}}></div>
+                    <div className="containerTitle" style={{ marginTop:`3vw`}}> LIVE METRICS </div>
+                    <div className="stats-deviceDetails">
+                        <div className="statsLabel-deviceDetails"> MEMORY USAGE:</div> <div className="statsValue"> {status[0]}% </div>
+                    </div>
+                    <div className="progressBarExt">
+                        <div className="progressBarInt" style={{ width: `${status[0]}%`, backgroundColor: `purple`}}></div>
+                    </div>
+                    <div className="stats-deviceDetails">
+                        <div className="statsLabel-deviceDetails"> CPU USAGE:</div> <div className="statsValue"> {status[1]}% </div>
+                    </div>
+                    <div className="progressBarExt">
+                        <div className="progressBarInt" style={{ width: `${status[1]}%`, backgroundColor: `#ffd138`}}></div>
+                    </div>
                 </div>
             </div>
-            <div className="divider"/>
-            <div className="rightContainer">
-                    <input type="text" placeholder="run command..." onChange={(e) => setCommand(e.target.value)}/>
-                    <button onClick={() => sendCommand()}>{runButtonText}</button>
+
+
+            <div className="actionCard">
+                <div className="cardContent">
+
+                    <div className="containerTitle"> RUN COMMAND </div>
+
+                    <div className="commandGroup">
+                        <input className="commandInput" type="text" placeholder="e.g. ls ~/Documents" onChange={(e) => setCommand(e.target.value)}/>
+                        <button className="runButton" onClick={() => sendCommand()}>{runButtonText}</button>
+                    </div>
                     <div className="commandOutput">
-                        Output: {output}
+                        <div style={{color: `blue`, paddingLeft: `12px`, paddingRight: `12px`, paddingBottom: `12px`}}>$</div> <div className="outputText">{output}</div>
                     </div>
 
+                    <div className="containerTitle"> TRANSFER FILE </div>
 
-                        <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])}/>
-                        <br/><br/>
-                        Run frequency:<br/>
-                        <label>
+                    <div className="deviceDetails-fileInput">
+                        <input className="file" type="file" id="file" onChange={(e) => setSelectedFile(e.target.files[0])}/>
+                        <label for="file">Choose file <span className="fileName"> • {selectedFile ? selectedFile.name : "No file choosen"}</span> </label>
+
+                    </div>
+
+                    <div className="containerTitle"> RUN FREQUENCY </div>
+
+                    <div className="timeOptions">
+                        <label className="option">
                             <input type="radio" name="selectedTime" value="transfer" checked={selectedTime === 'transfer'} onChange={handleTimeChange}/>
-                            transfer
+                            Transfer
                         </label>
-                        <label>
+                        <label className="option">
                             <input type="radio" name="selectedTime" value="run" checked={selectedTime === 'run'} onChange={handleTimeChange}/>
-                            run now
+                            Run now
                         </label>
-                        <label>
+                        <label className="option">
                             <input type="radio" name="selectedTime" value="day" checked={selectedTime === 'day'} onChange={handleTimeChange}/>
-                            every day
+                            Every day
                         </label>
 
-                        <label>
+                        <label className="option">
                             <input type="radio" name="selectedTime" value="hour" checked={selectedTime === 'hour'} onChange={handleTimeChange}/>
-                            every hour
+                            Every hour
                         </label>
 
-                        <label>
+                        <label className="option">
                             <input type="radio" name="selectedTime" value="startup" checked={selectedTime === 'startup'} onChange={handleTimeChange}/>
-                            at startup
+                            At startup
                         </label>
-                        <br/><br/>
-                        <button onClick={() => uploadFile()}>upload</button>
-
-
+                    </div>
+                    <button className="uploadButton" onClick={() => uploadFile()}>Upload</button>
+                </div>
             </div>
-
         </div>
+        </>
     );
     }
 

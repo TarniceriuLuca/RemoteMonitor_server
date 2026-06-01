@@ -1,14 +1,16 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import './style/monitoring.css'
 
-export default function Monitoring({ navigate, authState}) {
+export default function Monitoring({ navigate, authState, setPageTitle}) {
 
     const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState("Loading...");
 
      useEffect(() => {
         updateStatus();
+        setPageTitle("dashboard")
     }, []);
 
     useEffect(() => {
@@ -80,37 +82,54 @@ export default function Monitoring({ navigate, authState}) {
 
      return (
         <>
-            <h1>Monitoring</h1>
+            <div className="subtitleText">CONNECTED DEVICES • {status.length}</div>
             <h2>{loading}</h2>
             <div className="mainCanvas">
                 {status.map((client) => (
-                    <div key={client.ip} className="monitorCard" >
-                        {authState == "admin" &&
-                            <a className="clientNameAd" onClick={() => openDetails(client.ip, client.user)}> {client.name}</a> ||
-                            <p className="clientNameOp"> {client.name} </p>
-                        }
-                        <div className="progressBarExt" style={{borderColor: "white"}}>
-                            <div className="progressBarInt" style={{ width: `${2*client.status[0]}px`, backgroundColor: "white"}}>
-                            </div>
+                    <div key={client.ip} className={client.status[0] == "n/a" && "monitorCard-inactive" || "monitorCard-active"}>
+                        <p className={client.status[0] == "n/a" && "clientName-inactive" || "clientName-active"}> {client.name} </p>
+
+                        <div className="stats">
+                            {client.status[0] == "n/a" &&
+                                <><div className="statsLabel"> MEMORY:</div> <div className="statsValue"> - </div></> ||
+                                <><div className="statsLabel"> MEMORY:</div> <div className="statsValue"> {client.status[0]}% </div></>
+                            }
                         </div>
-
-                        <div className="progressBarExt" style={{borderColor: "#fcba03"}}>
-                            <div className="progressBarInt" style={{ width: `${2*client.status[1]}px`, backgroundColor: "#fcba03"}}>
-                            </div>
-                        </div>
-
-                        <span> mem: {client.status[0]} </span>
-                        <span> cpu: {client.status[1]} </span>
-
-                        {client.status[0] == "n/a" &&
-                            <a className="reconnectBtn" onClick={() => reconnect(client.ip, client.user)}>reconnect</a> ||
-                            <a className="shutdownBtn" onClick={() => shutdownClient(client.ip)}>Shutdown</a>
+                        <div className="progressBarExt">
+                            {client.status[0] == "n/a" &&
+                                <div className="progressBarInt" style={{ width: `0`, backgroundColor: `transparent`}}></div> ||
+                                <div className="progressBarInt" style={{ width: `${client.status[0]}%`, backgroundColor: `purple`}}></div>
                             }
 
-                        {client.status[0] == "n/a" &&
-                            <a className="forceDelBtn" onClick={() => removeClient(client.ip)}>Remove</a> ||
-                            <a className="deleteBtn" onClick={() => deleteClient(client.ip)}>Delete</a>
-                        }
+                        </div>
+                        <div className="stats">
+                            {client.status[0] == "n/a" &&
+                                <><div className="statsLabel"> CPU:</div> <div className="statsValue"> - </div></> ||
+                                <><div className="statsLabel"> CPU:</div> <div className="statsValue"> {client.status[1]}% </div></>
+                            }
+                        </div>
+                        <div className="progressBarExt">
+                            {client.status[0] == "n/a" &&
+                                <div className="progressBarInt" style={{ width: `-`, backgroundColor: `transparent`}}></div> ||
+                                <div className="progressBarInt" style={{ width: `${client.status[1]}%`, backgroundColor: `#ffd138`}}></div>
+                            }
+
+                        </div>
+
+                        <div className="actionMenu">
+                            {client.status[0] == "n/a" &&
+                                <button className="actionButton" onClick={() => reconnect(client.ip, client.user)}>reconnect</button> ||
+                                <button className="actionButton" onClick={() => shutdownClient(client.ip)}>Shutdown</button>
+                            }
+                            {authState == "admin" &&
+                            (client.status[0] == "n/a" &&
+                                <button className="actionButton" onClick={() => removeClient(client.ip)}>Remove</button> ||
+                                <>
+                                    <button className="actionButton" onClick={() => deleteClient(client.ip)}>Delete</button>
+                                    <button className="actionButton" onClick={() => openDetails(client.ip, client.user)}>Details</button>
+                                </>
+                            )}
+                        </div>
 
                     </div>
                 ))}

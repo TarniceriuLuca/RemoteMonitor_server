@@ -13,5 +13,9 @@ urlpatterns = [
     path('shutdownClient/', shutdown_client, name='shutdown_server'),
     path('uploadFile/', upload_file, name="upload_file"),
     path('authenticate/', login, name="authenticate"),
-    path('logout/', logout, name="logout")
+    path('logout/', logout, name="logout"),
+    path('getUsers/', get_users, name="get_users"),
+    path('setPermissions/', set_permissions, name="set_permissions"),
+    path('createAccount/', create_account, name="create_account"),
+
 ]

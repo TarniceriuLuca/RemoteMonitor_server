@@ -1,19 +1,26 @@
-import json, time, os
+import json, time
 import subprocess
-from multiprocessing.process import active_children
+import os
+from datetime import datetime
 
-
-from django.core.handlers.exception import response_for_exception
-from django.shortcuts import render
-from django.utils.choices import BaseChoiceIterator
+from django.contrib.gis.gdal.prototypes.srs import new_ct
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
-import socket, sys
+import socket
 from .models import Client
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
+from django.contrib.auth.models import User
 
+def add_log(log_data, err=False):
+    today = datetime.today().strftime('%d-%m-%Y')
+    time = datetime.today().strftime('%H:%M:%S')
+    path = os.path.expanduser("~") + "/RemoteMonitor/"
+    if err:
+        with open(path + today + ".log", "a+") as f:
+            f.write("[Error]" + time + " " + log_data + "\n")
+    else:
+        with open(path + today + ".log", "a+") as f:
+            f.write("[Log]" + time + " " + log_data + "\n")
 
 def perform_shutdown(client):
     port = 65432
@@ -30,30 +37,37 @@ def perform_shutdown(client):
 def login(request):
     username = request.POST['username']
     password = request.POST['password']
+
     user = authenticate(username=username, password=password)
     print(user)
     print("checking auth info")
     if user is not None:
+
         django_login(request, user)
-        if request.user.is_superuser:
+        if request.user.is_staff:
+            add_log("admin: '" + username + "'"+ " logged in", err=False)
             return Response("admin")
         else:
+            add_log("operator: '" + username + "'" + " logged in", err=False)
             return Response("operator")
+
     else:
+        add_log("authentication error", err=True)
         return Response("auth_error")
 
 @api_view(['GET'])
 def logout(request):
+    add_log("user logging out", err=False)
     django_logout(request)
     return Response("logout_OK")
 
 @api_view(['GET'])
 def get_status(request):
-    client = Client.objects.all()
+    clients = Client.objects.all()
     port = 65432
     data = "request_status"
     responseData = []
-    for client in client:
+    for client in clients:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -71,17 +85,19 @@ def get_status(request):
 @api_view(['GET'])
 def list_devices(request):
     responseData = []
+
     command = ["sudo", "arp-scan", "--plain", "--format=${ip}, ${vendor}", "-l"]
     activeHosts = subprocess.run(command, capture_output=True, text=True).stdout
     activeHosts = activeHosts.split("\n")
-    del activeHosts[-1] #sterge ultimul element null, creat din cauza ultimului caracter newline '\n'
+    del activeHosts[-1]  # sterge ultimul element null, creat din cauza ultimului caracter newline '\n'
+
+    add_log("admin queried network devices", err=False)
+
     activeHosts.sort()
     activeHosts.insert(0, '127.0.0.0, Localhost')
     activeHosts = list(dict.fromkeys(activeHosts)) #sterge intrarile duplicate
-    # print(activeHosts)
     for hosts in activeHosts:
         formatedData = hosts.split(",")
-        # print(formatedData[1])
         if Client.objects.filter(ip=formatedData[0]):
             responseData.append({"ip": formatedData[0], "vendor": formatedData[1], "connected": 1})
         else:
@@ -94,19 +110,20 @@ def add_device(request):
     ip = request.POST['ip']
     name = request.POST['name']
     user = request.POST['user']
-    print(ip, name)
-
 
     newDevice = Client.objects.update_or_create(
         ip=ip,
         user=user,
         name=name
     )
-    command1 = "ssh " + user + "@" + ip + " bash < ./backendLicenta/initialize.sh"
 
+    command1 = "./backendLicenta/create_sshKey.sh " + user + " " + ip
     subprocess.Popen(command1, shell=True)
-    command2 = "./backendLicenta/create_sshKey.sh " + user + " " + ip
+
+    command2 = "ssh " + user + "@" + ip + " bash < ./backendLicenta/initialize.sh"
     subprocess.Popen(command2, shell=True)
+
+    add_log("deivce: " + user + "@" + ip + " has been connected", err=False)
     response = "OK"
     return Response(response)
 
@@ -117,11 +134,8 @@ def reconnect(request):
 
     command = "ssh " + user+"@"+ip + " \" nohup python3 ~/RemoteMonitor/TCP_receive.py\""
     subprocess.Popen(command, shell=True)
-    streamdata = child.communicate()[0]
-    if child.returncode < 0:
-        response = "reconect_error"
-    else:
-        response = "success"
+    add_log("deivce: " + user + "@" + ip + " reconnected", err=False)
+    response = "success"
 
     return Response(response)
 
@@ -158,8 +172,10 @@ def delete_client(request):
     command = "ssh " + client.user + "@" + client.ip + " 'rm -r ~/RemoteMonitor'"
     subprocess.check_output(command, shell=True)
     if client.delete() and received != "none":
+        add_log("device " + client.user + "@" + clientIP + " has been deleted", err=False)
         response = "success"
     else:
+        add_log("deleting device " + client.user + "@" + clientIP + " failed", err=True)
         response = "delete_error"
     return Response(response)
 
@@ -169,8 +185,10 @@ def remove_client(request):
     client = Client.objects.get(pk=clientIP)
 
     if client.delete():
+        add_log("device " + client.user + "@" + clientIP + "has been removed", err=False)
         response = "success"
     else:
+        add_log("removing device " + client.user + "@" + clientIP + "failed", err=True)
         response = "remove_error"
     return Response(response)
 
@@ -180,7 +198,9 @@ def shutdown_client(request):
     client = Client.objects.get(pk=clientIP)
     try:
         received = perform_shutdown(client)
+        add_log("device " + client.user + "@" + clientIP + " has been shut down", err=False)
     except:
+        add_log("shutting down device " + client.user + "@" + clientIP + "failed", err=True)
         received = "shutdown_error"
 
     responseData = [{"result": received}]
@@ -198,9 +218,11 @@ def run_command(request):
 
     try:
         result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        add_log("admin ran '" + command + "' on device " + client.user + "@" + clientIP, err=False)
         print(str(result, "utf-8"))
     except subprocess.CalledProcessError as e:
         result = ">" + e.output + "<"
+        add_log(result, err=True)
         print(result)
 
     responseData.append({"result":str(result, "utf-8")})
@@ -221,6 +243,9 @@ def upload_file(request):
         # este selectat obiectul client din baza de date, dupa adresa IP a acestuia
         client = Client.objects.get(pk=clientIP)
         responseData.append({"result": "received"})
+
+        add_log("file was uploaded to device " + client.user + "@" + clientIP, err=False)
+
         # fișierul primit este citit, iar conținutul este copiat într-un
         # fișier temporar pentru a putea fi trimis către dispozitivul client
         file_content = script.read().decode("utf_8")
@@ -276,3 +301,50 @@ def upload_file(request):
         if command != "null":
             subprocess.check_output(command, shell=True)
     return Response(responseData)
+
+@api_view(['POST'])
+def get_users(request):
+    username = request.POST['username']
+    formatedUserList = []
+    if User.objects.get(username=username).is_staff:
+        userList = User.objects.all()
+        add_log("admin '" + username + "' requested user list", err=False)
+        for users in userList:
+            formatedUserList.append({"username": users.username, "is_staff": str(users.is_staff)})
+
+
+    if len(formatedUserList) == 0:
+        add_log("user list could not be provided", err=True)
+        return Response("user list error")
+    return Response(formatedUserList)
+
+@api_view(['POST'])
+def set_permissions(request):
+    activeUser = request.POST['activeUser']
+    username = request.POST['username']
+    status = request.POST['status']
+
+    print(activeUser, username, status)
+
+    if User.objects.get(username=activeUser).is_staff:
+
+        user = User.objects.get(username=username)
+        if status == "admin":
+            user.is_staff = True
+            add_log("admin '" + activeUser + "' set " + username + "status to admin")
+        else:
+            user.is_staff = False
+            add_log("admin '" + activeUser + "' set " + username + "status to operator")
+        user.save()
+    else:
+        add_log("user '" + activeUser + "' does not have permission to change user status")
+        return Response("set_permissions error")
+    return Response("OK")
+
+@api_view(['POST'])
+def create_account(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    newUser = User.objects.create_user(username, "", password)
+    newUser.save()
+    return Response("OK")

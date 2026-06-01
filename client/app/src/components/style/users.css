@@ -1,0 +1,61 @@
+.mainCanvas-users{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vh;
+}
+
+.usersCard{
+    display: flex;
+    justify-content: space-evenly;
+    width: 50%;
+}
+
+.usersCardContent{
+    display: flex;
+    align-items: left;
+    flex-direction: column;
+    padding: 3vw;
+    background-color: white;
+    border: solid #91919144 2px;
+    border-radius: 10px;
+    width: 100%;
+    height: auto;
+    font-size: 0.8rem;
+}
+
+.username{
+    display: flex;
+    align-items: center;
+}
+
+.userEntry{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 90%;
+}
+
+.connected{
+    background-color: transparent;
+    color: black;
+    width: 8vw;
+    margin: 1vh;
+}
+
+.connected:hover{
+    border-color: transparent;
+    cursor: unset;
+}
+
+.separator{
+    width: 100%;
+    height: 0.1vw;
+    background-color: #91919155;
+    border-radius: 5px;
+}
+
+.stateButton{
+    margin: 1vh;
+    width: 8vw;
+}

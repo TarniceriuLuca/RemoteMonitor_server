@@ -1,0 +1,74 @@
+
+
+.separator{
+    width: 100%;
+    height: 0.1vw;
+    background-color: #91919155;
+    border-radius: 5px;
+}
+
+.deviceEntry{
+    display: flex;
+    flex-direction: row;
+    width: 50%;
+    justify-content: space-between;
+}
+
+.parentContainer{
+    margin-top: 20vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10vh;
+}
+
+.deviceIP{
+    color: black;
+    text-decoration: underline;
+}
+
+.deviceIP:hover{
+    cursor: pointer;
+    color: #fcba03;
+}
+
+
+
+.formContainer{
+    width: 35vw;
+    margin: 0 auto;
+}
+
+.label{
+    font-size: 0.8rem;
+    color: #5e5d5d;
+}
+
+
+.registerInput{
+    box-sizing: border-box;
+    width: 100%;
+    height: 2.5vw;
+    margin-top: .5vw;
+    margin-bottom: 2vw;
+    padding-left: 12px;
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    color: black;
+}
+
+.registerButton{
+    width: 100%;
+    background-color: #00000000;
+    color: black;
+    border: solid 1px;
+    border-color: #5e5d5d;
+}
+
+.buttonGroup{
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    gap: 1vw;
+}
