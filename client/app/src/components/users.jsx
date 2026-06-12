@@ -52,6 +52,8 @@ const Users = ({ setPageTitle, navigate, authState }) => {
             const response = await axios.post("http://127.0.0.1:8000/api/createAccount/", body,
                 {headers:{'Content-Type':'multipart/form-data',}})
             console.log(response)
+            setViewState("users")
+            window.location.reload()
         }
 
 

@@ -57,6 +57,19 @@
         color: #91919166;
 }
 
+.monitorCard-reconnecting{
+        margin: 1.5vw;
+        display: flex;
+        justify-content: right;
+        flex-direction: column;
+        padding: 2vw;
+        background-color: white;
+        border: dotted #ffd138 2px;
+        border-radius: 10px;
+        width: 35%;
+        color: #91919166;
+}
+
 .actionMenu{
     display: flex;
     gap: 6px;
@@ -68,6 +81,16 @@
     color: black;
     border: 1px solid #91919177;
     margin: 1vw 0;
+}
+
+.actionButton:active{
+    background-color: black;
+    color: white;
+}
+
+.actionButton:disabled{
+    background-color: red;
+    color: white;
 }
 
 .clientName-active{

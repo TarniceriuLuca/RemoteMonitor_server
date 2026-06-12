@@ -9,7 +9,7 @@ const DeviceDetails = ({setPageTitle}) => {
     const [status, setStatus] = useState("");
     const [loading, setLoading] = useState("Loading...");
     const [command, setCommand] = useState();
-    const [output, setOutput] = useState("waiting for command...");
+    const [output, setOutput] = useState(["waiting for command..."]);
     const [selectedFile, setSelectedFile] = useState(null);
     const [runButtonText, setRunButtonText] = useState("Run");
     const [uploadButtonText, setUploadButtonText] = useState("upload")
@@ -32,7 +32,7 @@ const DeviceDetails = ({setPageTitle}) => {
 
 
     const updateStatus = async(ip) => {
-        const body = {"ip": ip};
+        const body = {"ip": ip, "username":localStorage.getItem('username')};
         const response = await axios.post("http://127.0.0.1:8000/api/ipStatus/", body,
             {headers:{'Content-Type':'multipart/form-data',}})
 
@@ -48,24 +48,26 @@ const DeviceDetails = ({setPageTitle}) => {
 
     const sendCommand = async() => {
         setRunButtonText("running...");
-        const body = {"ip":localStorage.getItem('currentIP'), "command": command};
+        const body = {"ip":localStorage.getItem('currentIP'), "command": command, "username":localStorage.getItem('username')};
         const response = await axios.post("http://127.0.0.1:8000/api/runCommand/", body,
             {headers:{'Content-Type':'multipart/form-data',}})
 
 
-        console.log(response.data[0]);
-        setOutput(response.data[0].result)
+        console.log(response.data);
+        setOutput(response.data)
         setRunButtonText("Run");
     }
 
 
     const uploadFile = async() => {
+
         setUploadButtonText("uploading...");
         const formData = new FormData();
         formData.append("script", selectedFile);
         formData.append("ip", localStorage.getItem('currentIP'));
         formData.append("fileName", selectedFile.name);
         formData.append("time", selectedTime);
+        formData.append("username", localStorage.getItem('username'));
 
         try{
             const response = await axios.post(
@@ -137,7 +139,12 @@ const DeviceDetails = ({setPageTitle}) => {
                         <button className="runButton" onClick={() => sendCommand()}>{runButtonText}</button>
                     </div>
                     <div className="commandOutput">
-                        <div style={{color: `blue`, paddingLeft: `12px`, paddingRight: `12px`, paddingBottom: `12px`}}>$</div> <div className="outputText">{output}</div>
+                        <div style={{color: `blue`, paddingLeft: `12px`, paddingRight: `12px`, paddingBottom: `12px`}}>$</div>
+                        <div className="outputText">{
+                            output.map((outputLine) => (
+                                <div className="outputLine"> {outputLine}</div>
+                            ))
+                        }</div>
                     </div>
 
                     <div className="containerTitle"> TRANSFER FILE </div>

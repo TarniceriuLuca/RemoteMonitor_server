@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
+import axios from 'axios'
 import './App.css'
 
 import NewDevice from './components/newDevice';
@@ -32,12 +33,14 @@ function App() {
     }, [page])
 
     const logout = async() => {
+        const body = {"username": localStorage.getItem('username')}
         localStorage.setItem('authState', 'auth_error')
         localStorage.setItem('username', 'no_user')
         setAuthState('auth_error')
         setUsername('no_user')
-        const response = await fetch("http://127.0.0.1:8000/api/logout/");
-        const data = await response.json();
+
+        const response = await axios.post("http://127.0.0.1:8000/api/logout/", body,
+            {headers:{'Content-Type':'multipart/form-data',}})
     }
 
     const navigate = (newPage) => setPage(newPage)

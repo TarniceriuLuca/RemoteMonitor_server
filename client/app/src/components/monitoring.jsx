@@ -37,7 +37,7 @@ export default function Monitoring({ navigate, authState, setPageTitle}) {
     };
 
     const postData = async(ip, user) => {
-        const body = {"ip": ip, "user":user};
+        const body = {"ip": ip, "user":user, "username":localStorage.getItem('username')};
         console.log(body)
         const response = await axios.post("http://127.0.0.1:8000/api/reconnect/", body,
             {headers:{'Content-Type':'multipart/form-data',}})
@@ -58,7 +58,7 @@ export default function Monitoring({ navigate, authState, setPageTitle}) {
     }
 
     const deleteClient = async(ip) => {
-            const body = {"ip": ip};
+            const body = {"ip": ip, "username":localStorage.getItem('username')};
             console.log(body)
             const response = await axios.post("http://127.0.0.1:8000/api/deleteClient/", body,
                 {headers:{'Content-Type':'multipart/form-data',}})
@@ -66,15 +66,17 @@ export default function Monitoring({ navigate, authState, setPageTitle}) {
     }
 
     const removeClient = async(ip) => {
-            const body = {"ip": ip};
+            const body = {"ip": ip, "username":localStorage.getItem('username')};
             const response = await axios.post("http://127.0.0.1:8000/api/removeClient/", body,
                 {headers:{'Content-Type':'multipart/form-data',}})
             console.log(response)
+            window.location.reload()
     }
 
     const shutdownClient = async(ip) => {
-            const body = {"ip": ip};
+            const body = {"ip": ip, "username":localStorage.getItem('username')};
             console.log(body)
+
             const response = await axios.post("http://127.0.0.1:8000/api/shutdownClient/", body,
                 {headers:{'Content-Type':'multipart/form-data',}})
             console.log(response)
@@ -86,7 +88,7 @@ export default function Monitoring({ navigate, authState, setPageTitle}) {
             <h2>{loading}</h2>
             <div className="mainCanvas">
                 {status.map((client) => (
-                    <div key={client.ip} className={client.status[0] == "n/a" && "monitorCard-inactive" || "monitorCard-active"}>
+                    <div key={client.ip} className={(client.status[0] == "n/a" && "monitorCard-inactive" || "monitorCard-active")}>
                         <p className={client.status[0] == "n/a" && "clientName-inactive" || "clientName-active"}> {client.name} </p>
 
                         <div className="stats">
@@ -113,7 +115,6 @@ export default function Monitoring({ navigate, authState, setPageTitle}) {
                                 <div className="progressBarInt" style={{ width: `-`, backgroundColor: `transparent`}}></div> ||
                                 <div className="progressBarInt" style={{ width: `${client.status[1]}%`, backgroundColor: `#ffd138`}}></div>
                             }
-
                         </div>
 
                         <div className="actionMenu">

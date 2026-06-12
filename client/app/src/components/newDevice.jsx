@@ -6,7 +6,7 @@ import './style/newDevice.css'
 const NewDevice = ({ navigate, setPageTitle }) => {
 
      const[devices, setDevices] = useState();
-     const[viewState, setViewState] = useState("Please authenticate in server console");
+     const[viewState, setViewState] = useState("Loading...");
      const[backButtonText, setBackButtonText] = useState("Back")
 
      const [deviceName, setDeviceName] = useState("");
@@ -28,8 +28,7 @@ const NewDevice = ({ navigate, setPageTitle }) => {
 
 
     const postData = async(ip, name, user) => {
-        const body = {"ip": ip, "name": name, "user":user};
-        console.log(body)
+        const body = {"ip": ip, "name": name, "user":user, "username": localStorage.getItem('username')};
         const response = await axios.post("http://127.0.0.1:8000/api/addDevice/", body,
             {headers:{'Content-Type':'multipart/form-data',}})
 
@@ -54,9 +53,10 @@ const NewDevice = ({ navigate, setPageTitle }) => {
             setBackButtonText("Loading...")
             const response = await fetch("http://127.0.0.1:8000/api/listDevices/");
             const data = await response.json();
+            var parsedData = JSON.parse(data)
 
-            console.log(data);
-            setDevices(data);
+            console.log(parsedData);
+            setDevices(parsedData);
             setViewState("deivces");
             setBackButtonText("Back")
         } catch(err){
@@ -64,7 +64,7 @@ const NewDevice = ({ navigate, setPageTitle }) => {
         }
     };
 
-    if(viewState == "Loading..." || viewState == "Please authenticate in server console"){
+    if(viewState == "Loading..."){
         return(
         <>
         <h1> Add new device </h1>
