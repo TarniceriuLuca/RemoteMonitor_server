@@ -14,6 +14,8 @@ const NewDevice = ({ navigate, setPageTitle }) => {
      const [selectedIP, setSelectedIP] = useState("");
      const [loading, setLoading] = useState("");
 
+     const [customIP, setCustomIP] = useState("");
+
      const data = {};
 
      useEffect(() => {
@@ -109,6 +111,10 @@ const NewDevice = ({ navigate, setPageTitle }) => {
         <>
 
         <div className="parentContainer">
+            <form className="formStyle">
+                <input type="text" placeholder="ip address" className="ipInput" onChange={(e) => setCustomIP(e.target.value)}/>
+                <button className="ipButton" onClick={() => handleSelection(customIP)}>Send IP</button>
+            </form>
             {devices.map((host) => (
 
                 <>
