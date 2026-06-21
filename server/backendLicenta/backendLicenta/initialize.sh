@@ -11,4 +11,4 @@ ssh $1@$2 "python3 -m venv ~/RemoteMonitor/.venv"
 ssh $1@$2 "source ~/RemoteMonitor/.venv/bin/activate"
 ssh $1@$2 "pip install -r ~/RemoteMonitor/pipRequirements.txt"
 
-read -n 1 -p Continue?;
+read -n 1 -p "Press enter to continue";

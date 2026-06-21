@@ -10,16 +10,23 @@ case "$ID" in
     sudo dnf -y install "${pkgs[@]}"
     ;;
 esac
+
+# clonare cod sursa
+mkdir ~/RemoteMonitor_server
+cd ~/RemoteMonitor_server
+git clone https://github.com/TarniceriuLuca/RemoteMonitor_server.git ~/RemoteMonitor_server
 # instalare axios prin npm
-mkdir ~/RemoteMonitor
-cd ~/RemoteMonitor
 sudo npm install axios
 # instalare yarn
 sudo npm install --global yarn@1
+# obtinere lista pachete pip
+curl --output ~/RemoteMonitor/pipRequirements(server).txt 'https://raw.githubusercontent.com/TarniceriuLuca/proiectLicenta/refs/heads/main/pipRequirements(server).txt'
 # instalare dependente pip
-python3 -m venv ~/RemoteMonitor/.venv
-source ~/RemoteMonitor/.venv/bin/activate
-pip install -r ~/RemoteMonitor/pipRequirements(server).txt
+python3 -m venv ~/RemoteMonitor_server/.venv
+source ~/RemoteMonitor_server/.venv/bin/activate
+pip install -r ~/RemoteMonitor_server/pipRequirements(server).txt
+
+
 # generare cheie de criptare ssh
 ssh-keygen -t rsa
 # crearea folderului pentru fisierele de log vizibile administratorului
